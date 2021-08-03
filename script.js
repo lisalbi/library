@@ -12,15 +12,17 @@ closeFormBtn.addEventListener('click', closeForm);
 submitBookBtn.addEventListener('click', addBook);
 
 
-function Book(title, author, pages, hasRead) {
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.hasRead = hasRead;
-    this.info = function() {
-        return (hasRead ? (title + ' by ' + author + ', ' + pages + ', already read.') : 
-            (title + ' by ' + author + ', ' + pages + ', not read yet.'));
+class Book {
+    constructor(title, author, pages, hasRead) {
+        this.title = title
+        this.author = author
+        this.pages = pages
+        this.hasRead = hasRead
     }
+    getInfo() {
+        return (hasRead ? (title + ' by ' + author + ', ' + pages + ', already read.') : (title + ' by ' + author + ', ' + pages + ', not read yet.'));
+    }
+    
 }
 
 
@@ -30,16 +32,15 @@ function addBook() {
     let pages = document.getElementById('pages').value;
     let read = document.getElementById('read').checked;
     let newBook = new Book(title, author, pages, read);
+    console.log(typeof newBook)
     myLibrary.push(newBook);
-    for (book of myLibrary) {
-        console.log(book.info());
-    }
-    refreshTable();
+    displayTable();
     bookForm.reset();
     closeForm();
+    updateStorage();
 }
 
-function refreshTable() {
+function displayTable() {
     console.log('refreshing...');
     libraryBody.textContent = '';
     for (book of myLibrary) {
@@ -69,26 +70,18 @@ function refreshTable() {
         deleteBtn.appendChild(img);
         console.log(`adding delete btn at ${myLibrary.indexOf(book)}`);
         deleteBtn.addEventListener('click', function() {
-            deleteBook(this.parentElement.getAttribute('data-id'));
+            deleteBook(this.getAttribute('data-id'));
         })
         deleteBtnContainer.appendChild(deleteBtn);
         row.appendChild(deleteBtnContainer);
         libraryBody.appendChild(row);
         
     }   
-    showArray();
 }
 
 // let theHobbit = new Book('The Hobbit', "JRR Tolkien", 453, false);
 // addBook(theHobbit);
 // displayTable();
-
-function showArray() {
-    for (book of myLibrary) {
-        console.log(`index: ${myLibrary.indexOf(book)}`)
-        console.log(book.info());
-    }
-}
 
 function openForm() {
     bookFormContainer.style.display = 'block';
@@ -100,6 +93,25 @@ function closeForm() {
 
 function deleteBook(index) {
     myLibrary.splice(index, 1);
-    refreshTable();
+    displayTable();
     console.log(`deleting book at index ${index}`);
+    updateStorage();
 }
+
+function pullStorage() {
+    if (!localStorage.myLibrary) {
+        displayTable();
+    }
+    else {
+        let storage = localStorage.getItem('myLibrary');
+        storage = JSON.parse(storage);
+        myLibrary = storage;
+        displayTable();
+    }
+}
+
+function updateStorage() {
+    localStorage.setItem('myLibrary', JSON.stringify(myLibrary));
+}
+
+pullStorage();
